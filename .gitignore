@@ -8,6 +8,11 @@ models/
 *.h5
 *.ckpt
 
+# Local course report artifacts
+course_design_report_digit_recognizer_wangjing_group.docx
+report_assets/
+~$*.docx
+
 # Kaggle data and generated submissions
 train/*.csv
 test/*.csv
