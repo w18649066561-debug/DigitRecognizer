@@ -1,14 +1,13 @@
-# Digit Recognizer High-Score CNN
+# Digit Recognizer 高分 CNN 方案
 
-This repository contains a strong TensorFlow/Keras solution for the Kaggle
-[Digit Recognizer](https://www.kaggle.com/c/digit-recognizer) competition.
+本仓库是 Kaggle [Digit Recognizer](https://www.kaggle.com/c/digit-recognizer)
+竞赛的一个高分训练脚本，使用 TensorFlow/Keras 构建卷积神经网络。
 
-The code trains a convolutional neural network with image augmentation, learning
-rate scheduling, early stopping, model checkpointing, ensembling, and test-time
-augmentation. It reads the standard Kaggle CSV files and writes a submission CSV
-with `ImageId` and `Label`.
+脚本包含数据增强、验证集划分、学习率自动调整、早停、模型 checkpoint、
+多模型集成和测试时增强，可以直接读取 Kaggle 标准 CSV 数据并生成可提交的
+`submission.csv` 文件。
 
-## Project Structure
+## 项目结构
 
 ```text
 DigitRecognizer/
@@ -21,84 +20,89 @@ DigitRecognizer/
     └── test.csv
 ```
 
-The data files are intentionally ignored by Git because they are large and
-should be downloaded from Kaggle or kept locally.
+数据文件体积较大，已经通过 `.gitignore` 排除，不会提交到 GitHub。请从
+Kaggle 下载数据后放到对应目录。
 
-## Environment
+## 环境准备
 
-Python 3.10 or newer is recommended.
+建议使用 Python 3.10 或更高版本。
 
-Install the required packages:
+安装依赖：
 
 ```powershell
 py -m pip install numpy pandas scikit-learn tensorflow
 ```
 
-On native Windows, TensorFlow 2.11+ uses CPU by default. For faster training,
-run the project in WSL2 with a GPU-enabled TensorFlow setup.
+当前脚本在 Windows 原生环境可以直接运行。需要注意的是，TensorFlow 2.11
+及之后的版本在 Windows 原生环境默认使用 CPU。如果想加速训练，建议使用
+WSL2 或其他支持 GPU 的深度学习环境。
 
-## Data
+## 数据放置
 
-Place the Kaggle files in these paths:
+请将 Kaggle 数据放在以下路径：
 
 ```text
 train/train.csv
 test/test.csv
 ```
 
-`train.csv` must contain the `label` column followed by `pixel0` through
-`pixel783`. `test.csv` must contain only `pixel0` through `pixel783`.
+其中：
 
-## Quick Pipeline Check
+- `train.csv` 需要包含 `label` 和 `pixel0` 到 `pixel783`
+- `test.csv` 需要包含 `pixel0` 到 `pixel783`
 
-Use this to verify the full training and prediction pipeline on a small subset:
+## 快速检查
+
+如果只是想确认代码流程能跑通，可以使用小样本快速检查：
 
 ```powershell
 py .\train_high_score.py --quick-check --epochs 1 --models 1 --tta 1 --output test\submission_quick_check.csv
 ```
 
-This is only a smoke test. Do not submit the quick-check output to Kaggle.
+这个命令只用于检查训练、预测和保存文件流程，不适合作为 Kaggle 提交结果。
 
-## Train a Strong Baseline
+## 默认训练
+
+运行：
 
 ```powershell
 py .\train_high_score.py
 ```
 
-Default settings:
+默认配置：
 
-- 3 CNN models
-- 30 epochs per model
-- batch size 128
-- 10% stratified validation split
-- 4 rounds of test-time augmentation
+- 训练 3 个 CNN 模型
+- 每个模型最多训练 30 轮
+- batch size 为 128
+- 使用 10% 分层验证集
+- 使用 4 轮测试时增强
 
-The submission is saved to:
+默认提交文件会保存到：
 
 ```text
 test/submission_high_score.csv
 ```
 
-## Higher-Score Run
+## 冲分训练
 
-For a slower but stronger ensemble:
+如果机器性能允许，可以增加模型数量、训练轮数和测试时增强次数：
 
 ```powershell
 py .\train_high_score.py --models 5 --epochs 40 --tta 8
 ```
 
-For an even more aggressive run:
+更激进的配置：
 
 ```powershell
 py .\train_high_score.py --models 10 --epochs 45 --tta 12
 ```
 
-The best settings depend on available CPU/GPU time. On CPU-only Windows, start
-with the default command first.
+CPU 训练会比较慢，建议先用默认命令跑出一个稳定结果，再根据时间继续加大
+集成规模。
 
-## Output
+## 输出格式
 
-The script creates a Kaggle-compatible CSV:
+脚本会生成 Kaggle 要求的提交文件：
 
 ```text
 ImageId,Label
@@ -108,12 +112,24 @@ ImageId,Label
 ...
 ```
 
-Upload `test/submission_high_score.csv` to Kaggle for scoring.
+上传 `test/submission_high_score.csv` 到 Kaggle 即可查看分数。
 
-## Notes
+## 脚本特点
 
-- Model checkpoints are saved under `models/` during training and ignored by
-  Git.
-- The script uses different random seeds for each model in the ensemble.
-- Test-time augmentation averages predictions from the original test images and
-  several lightly augmented versions.
+- 使用卷积神经网络识别 28x28 灰度手写数字
+- 使用随机旋转、平移、缩放增强训练集
+- 使用 Batch Normalization 和 Dropout 提高泛化能力
+- 使用 ReduceLROnPlateau 自动降低学习率
+- 使用 EarlyStopping 自动恢复最佳验证集权重
+- 支持多模型集成，降低单模型随机性
+- 支持测试时增强，提高提交稳定性
+
+## Git 说明
+
+仓库只提交代码、README 和配置文件。以下内容不会提交：
+
+- `train/*.csv`
+- `test/*.csv`
+- `models/`
+- 历史数据和本地材料
+- 训练产生的模型文件和提交文件
