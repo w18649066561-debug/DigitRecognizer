@@ -1,0 +1,28 @@
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Training artifacts
+models/
+*.keras
+*.h5
+*.ckpt
+
+# Kaggle data and generated submissions
+train/*.csv
+test/*.csv
+*.csv
+
+# Historical/local materials
+以往数据/
+
+# Local environment
+.venv/
+venv/
+.env
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
